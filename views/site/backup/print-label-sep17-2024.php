@@ -1,0 +1,226 @@
+<?php
+
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+use app\models\TblBin;
+use app\models\TblBinArea;
+use app\models\TblBinBay;
+use app\models\TblBinLevel;
+use app\models\TblBinPosition;
+use app\models\TblBinRow;
+use yii\helpers\ArrayHelper;
+//-----get bins --------
+$allbins = TblBin::find()->where(['status'=>1])->all();
+$binarr = ArrayHelper::map($allbins, 'id', function($model) {
+  //-------get area ------
+  $getarea = TblBinArea::find()->where(['status'=>1,'id'=>$model->fk_area_id])->one();
+  if(isset($getarea) && $getarea->title != ""){
+    $area = $getarea->title;
+  }else{
+    $area = "";
+  }
+  //---------get row ------
+  $getrow = TblBinRow::find()->where(['status'=>1,'id'=>$model->fk_row_id])->one();
+  if(isset($getrow) && $getrow->title != ""){
+    $row = $getrow->title;
+  }else{
+    $row = "";
+  }
+  //---------get bay -------
+  $getbay = TblBinBay::find()->where(['status'=>1,'id'=>$model->fk_bay_id])->one();
+  if(isset($getbay) && $getbay->title != ""){
+    $bay = $getbay->title;
+  }else{
+    $bay = "";
+  }
+  //---------get level -------
+  $getlevel = TblBinLevel::find()->where(['status'=>1,'id'=>$model->fk_level_id])->one();
+  if(isset($getlevel) && $getlevel->title != ""){
+    $level = $getlevel->title;
+  }else{
+    $level = "";
+  }
+  //---------get position -------
+  $getposition = TblBinPosition::find()->where(['status'=>1,'id'=>$model->fk_position_id])->one();
+  if(isset($getposition) && $getposition->title != ""){
+    $position = $getposition->title;
+  }else{
+    $position = "";
+  }
+  return $area.' - '.$row.' - '.$bay.' - '.$level.' - '.$position;
+});
+// print_r($binarr);
+$this->title = "Print Labels";
+
+use yii\helpers\Url;
+use app\models\TblMenu;
+//=======get the mennu items with parent_id = 18 =======
+//====order by priority =======
+$getmenuitems = TblMenu::find()->where(['parent_id'=>18,'status'=>1])->orderBy(['priority'=>SORT_ASC])->all();
+//======current menu id is 19=======
+if(isset($getmenuitems) && count($getmenuitems) > 0){
+  echo '<nav aria-label="breadcrumb mb-2">
+  <ol class="breadcrumb mb-0">';
+  foreach($getmenuitems as $gm){
+    if($gm->id == 62){
+      echo ' <li class="breadcrumb-item active" aria-current="page">'.$gm->title.'</li>';
+    }else{
+      echo '<li class="breadcrumb-item"><a href="'.Url::to([$gm->url]).'">'.$gm->title.'</a></li>';
+    }
+  }
+  echo '  </ol>
+</nav>';
+}//======if isset ended ========
+?>
+    <style>
+    @page {
+            size: 21.6cm 27.9cm;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .label-sheet {
+            width: 21.6cm;
+            height: 27.9cm;
+            margin: 0;
+            padding-top: 1.2cm;
+            padding-left: 0.4cm;
+            box-sizing: border-box;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+
+        .label {
+            width: 10.1cm;
+            height: 2.55cm;
+            border: 1px solid grey;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #000;
+            box-sizing: border-box;
+            margin: 0;
+            font-size:35px;
+            font-weight:900;
+        }
+
+        .label:nth-child(2n) {
+            margin-left: 0.4cm; /* Space between columns */
+        }
+
+        .no-print {
+            margin: 20px;
+            text-align: center;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .label-sheet, .label-sheet * {
+                visibility: visible;
+            }
+            .label-sheet {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 21.6cm;
+                height: 27.9cm;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+       </style>
+
+       <div class="card shadow rounded mt-2">
+      <div class="card-body p-3">
+          <div class="row">
+              <div class="col-lg-6">
+                  <h3>Generate Printable Labels</h3>
+              </div>
+              <div class="col-lg-6 text-end">
+                  <button id="printButton" class="btn btn-primary btn-sm">Print Labels</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div class="card shadow rounded mt-2 mb-2">
+      <div class="card-body p-3">
+          <div class="container">
+              <form id="labelForm" class="mb-4">
+                  <div class="mb-3">
+                      <label for="labelSelect" class="form-label">Select 20 options:</label>
+                      <select id="labelSelect" class="form-select" multiple required>
+                          <?php
+                          foreach($binarr as $key => $value){
+                              echo '<option value="'.$key.'">'.$value.'</option>';
+                          }
+                          ?>
+                      </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-sm">Create Labels</button>
+              </form>
+
+              <div class="row">
+                <div class="col-12">
+                  <p class="text-danger text-center fw-bold">
+                    Please Select Paper Size - A4, Margin Settings - None and Scale - Default when printing the labels.
+                    <!-- Check out this <a target="_blank" href="img/printer-settings-label.png">image</a> for reference. -->
+                  </p>
+                </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div id="print_content_container">
+      <div id="labelSheetContainer" class="label-sheet"></div>
+  </div>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const labelSelect = new Choices('#labelSelect', {
+            removeItemButton: true,
+            maxItemCount: 20,
+            searchEnabled: true,
+            searchResultLimit: -1,
+            renderChoiceLimit: -1,
+            shouldSort: false
+        });
+        document.getElementById('labelForm').addEventListener('submit', function(event) {
+               event.preventDefault();
+               const labelSheetContainer = document.getElementById('labelSheetContainer');
+               labelSheetContainer.innerHTML = ''; // Clear previous labels
+
+               // Log selected options to understand their structure
+               console.log('Selected Options:', labelSelect.getValue());
+
+               const selectedOptions = labelSelect.getValue();
+               selectedOptions.forEach(option => {
+                   console.log('Option:', option);
+                   // Handle different formats
+                   const labelText = option.label || option.value || option; // Try different properties or default to option itself
+                   const labelDiv = document.createElement('div');
+                   labelDiv.classList.add('label');
+                   labelDiv.textContent = labelText; // Use the determined text for the label
+                   labelSheetContainer.appendChild(labelDiv);
+               });
+               // Add background color and text alignment
+               const labelSheetOuter = document.getElementById('print_content_container');
+               labelSheetOuter.style.backgroundColor = '#fff';
+            // labelSheetContainer.style.textAlign = 'center';
+           });
+        document.getElementById('printButton').addEventListener('click', function() {
+            window.print(); // This will print only the labelSheetContainer
+        });
+    });
+</script>

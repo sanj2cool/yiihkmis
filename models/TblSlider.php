@@ -1,0 +1,77 @@
+<?php
+
+namespace app\models;
+
+use Yii;
+
+/**
+ * This is the model class for table "tbl_slider".
+ *
+ * @property int $id
+ * @property string $url
+ * @property int $sequence
+ * @property int $status_val 1- active, 2- inactive
+ * @property string $ip
+ * @property int $status 1 active 2 blocked 0 inactive
+ * @property string $crt_by
+ * @property string $mod_by
+ * @property string $crt_time
+ * @property string|null $mod_time
+ */
+class TblSlider extends \yii\db\ActiveRecord
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function tableName()
+    {
+        return 'tbl_slider';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        return [
+            [['url'], 'required'],
+            [['sequence', 'status_val', 'status'], 'integer'],
+            [['crt_time', 'mod_time'], 'safe'],
+            [['url'], 'string', 'max' => 100],
+            [['ip', 'crt_by'], 'string', 'max' => 40],
+            [['mod_by'], 'string', 'max' => 50],
+        ];
+    }
+    public function beforeSave($insert) {
+        $session = Yii::$app -> session;
+        if ($insert) {
+          $this -> ip = Yii::$app -> getRequest() -> getUserIp();
+          $this -> crt_by = $session -> get('userId');
+          $this -> crt_time = date('Y-m-d H:i:s');
+          $this -> status = 1;
+        } else {
+          $this -> ip = Yii::$app -> getRequest() -> getUserIp();
+          $this -> mod_by = $session -> get('userId');
+          $this -> mod_time = date('Y-m-d H:i:s');
+        }
+        return parent::beforeSave($insert);
+      }
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'url' => 'Image',
+            'sequence' => 'Sequence',
+            'status_val' => 'Status',
+            'ip' => 'Ip',
+            'status' => 'Status',
+            'crt_by' => 'Crt By',
+            'mod_by' => 'Mod By',
+            'crt_time' => 'Crt Time',
+            'mod_time' => 'Mod Time',
+        ];
+    }
+}
