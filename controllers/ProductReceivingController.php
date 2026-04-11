@@ -255,16 +255,37 @@ class ProductReceivingController extends BaseController
 
         $bin_location = $_POST['bin_location'] ?? '';
         $remarks = $_POST['remarks'] ?? '';
-        if(!empty($bin_location) || !empty($remarks)){
-          $modelReceipt = TblProductReceiving::find()->where(['id'=>$id])->one();
-          $modelReceipt->bin_location = $bin_location;
-          $modelReceipt->remarks = $remarks;
-          if($modelReceipt->save()){
+        $shipping = $_POST['shipping'] ?? '';
+        $other_charges = $_POST['other_charges'] ?? '';
+        $custom_charges = $_POST['custom_charges'] ?? '';
+        if(!empty($bin_location) || !empty($remarks) || !empty($shipping) || !empty($other_charges) || !empty($custom_charges)){
+            $modelReceipt = TblProductReceiving::findOne($id);
 
-            Yii::$app->getSession()->setFlash('success', 'Record updated successfully.');
-          }else{
-            Yii::$app->getSession()->setFlash('error', 'Something went wrong. Please try again.');
-          }
+            if($modelReceipt){
+                $modelReceipt->bin_location   = $bin_location;
+                $modelReceipt->remarks        = $remarks;
+
+                $modelReceipt->shipping       = $shipping;
+                $modelReceipt->other_charges  = $other_charges;
+                $modelReceipt->custom_charges = $custom_charges;
+
+      /**          // 🔥 calculate new price
+    $total_items = $modelReceipt->no_of_items;
+
+    $base_total  = $modelReceipt->price_per_item * $total_items;
+    $extra       = $shipping + $other_charges + $custom_charges;
+
+    if ($total_items > 0) {
+        $modelReceipt->price_per_item = round(($base_total + $extra) / $total_items, 2);
+    }
+        **/
+
+                if($modelReceipt->save(false)){
+                    Yii::$app->session->setFlash('success', 'Record updated successfully.');
+                }else{
+                    Yii::$app->session->setFlash('error', 'Save failed.');
+                }
+            }
         }else{
           Yii::$app->getSession()->setFlash('error', 'Please add bin location or remarks.');
         }
@@ -276,4 +297,53 @@ class ProductReceivingController extends BaseController
       }
       return $this->redirect(['view-test', 'id' => $id]);
     }
+public function actionUpdateShipping()
+{
+    Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+    $id = Yii::$app->request->post('id');
+    $shipping = Yii::$app->request->post('shipping');
+
+    $model = TblProductReceiving::findOne($id);
+
+    if ($model) {
+        $model->shipping = $shipping;
+
+        if ($model->save(false)) {
+            return ['success' => true];
+        }
+    }
+
+    return ['success' => false];
+}
+
+
+public function actionUpdateField()
+{
+    Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+    $id    = Yii::$app->request->post('id');
+    $field = Yii::$app->request->post('field');
+    $value = Yii::$app->request->post('value');
+
+    $allowedFields = ['shipping', 'other_charges', 'custom_charges'];
+
+    if (!in_array($field, $allowedFields)) {
+        return ['success' => false, 'error' => 'Invalid field'];
+    }
+
+    $model = TblProductReceiving::findOne($id);
+
+    if ($model) {
+        $model->$field = $value;
+
+        if ($model->save(false)) {
+            return ['success' => true];
+        }
+    }
+
+    return ['success' => false];
+}
+
+   
 }

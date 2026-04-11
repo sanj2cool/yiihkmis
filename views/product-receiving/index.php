@@ -55,6 +55,9 @@ $binarr = ArrayHelper::map($allbins, 'id', function($model) {
       <div class="col-lg-6">
         <h3>
           <?= Html::encode($this->title) ?>
+          <?= \app\components\CurrencyConverter::widget([
+    'amount' => 0
+]); ?>
         </h3>
       </div>
       <div class="col-lg-6 text-end">
@@ -185,6 +188,21 @@ $binarr = ArrayHelper::map($allbins, 'id', function($model) {
           ],
           'no_of_items',
           'price_per_item',
+          [
+    'label' => 'Cost Per Product',
+    'format' => 'raw',
+    'value' => function ($model) {
+
+        return '<span class="cost-per-item"
+            data-price="'.$model->price_per_item.'"
+            data-qty="'.$model->no_of_items.'"
+            data-shipping="'.($model->shipping ?? 0).'"
+            data-other="'.($model->other_charges ?? 0).'"
+            data-custom="'.($model->custom_charges ?? 0).'"
+            data-usa="'.($model->vendor && $model->vendor->is_usa ? 1 : 0).'"
+        ></span>';
+    }
+],
           // 'fk_bin_id',
           // [
           //   'attribute' => 'fk_bin_id',
@@ -218,6 +236,34 @@ $binarr = ArrayHelper::map($allbins, 'id', function($model) {
             },
             'filter' => Html::activeDropDownList($searchModel, 'fk_location_id', $locationarr,['class'=>'form-control','prompt' => 'Select']),
           ],
+          [
+    'attribute' => 'shipping',
+    'format' => 'raw',
+    'value' => function($model) {
+        return '<input type="text" class="form-control shipping-input" 
+                data-id="'.$model->id.'" 
+                value="'.$model->shipping.'">';
+    }
+],
+[
+    'attribute' => 'other_charges',
+    'format' => 'raw',
+    'value' => function($model) {
+        return '<input type="text" class="form-control other-input" 
+                data-id="'.$model->id.'" 
+                value="'.$model->other_charges.'">';
+    }
+],
+[
+    'attribute' => 'custom_charges',
+    'format' => 'raw',
+    'value' => function($model) {
+        return '<input type="text" class="form-control custom-input" 
+                data-id="'.$model->id.'" 
+                value="'.$model->custom_charges.'">';
+    }
+],
+          
           //'remarks:ntext',
           //'ip',
           //'status',
@@ -238,3 +284,93 @@ $binarr = ArrayHelper::map($allbins, 'id', function($model) {
     </div>
   </div>
 </div>
+
+
+<?php 
+$js = <<<JS
+
+function calculateCosts() {
+
+    let rate = parseFloat($('.js-currency .cc-rate').val()) || 1;
+    let toggle = $('.js-currency .cc-toggle').is(':checked');
+
+    $('.cost-per-item').each(function () {
+
+        
+        let price = parseFloat($(this).attr('data-price')) || 0;
+    let qty   = parseFloat($(this).attr('data-qty')) || 1;
+          let isUSA = parseInt($(this).attr('data-usa')) || 0;
+        let ship  = parseFloat($(this).attr('data-shipping')) || 0;
+let other = parseFloat($(this).attr('data-other')) || 0;
+let custom= parseFloat($(this).attr('data-custom')) || 0;
+
+        let product_total = price * qty;
+
+        if (isUSA ) {
+            product_total = product_total * rate;
+        }
+
+        let final = product_total + ship + other + custom;
+        let cost = final / qty;
+
+        $(this).text(cost.toFixed(2));
+    });
+}
+
+// ✅ initial load
+$(window).on('load', function () {
+    calculateCosts();
+});
+
+// ✅ when rate changes
+$(document).on('input keyup change', '.js-currency .cc-rate', function () {
+    calculateCosts();
+});
+
+// ✅ when toggle changes
+$(document).on('change', '.js-currency .cc-toggle', function () {
+    //calculateCosts();
+});
+
+// ✅ if using PJAX
+$(document).on('pjax:end', function () {
+    calculateCosts();
+});
+
+
+$(document).on('change', '.shipping-input, .other-input, .custom-input', function() {
+
+    var input = $(this);
+    var id = input.data('id');
+    var value = input.val();
+
+    let field = '';
+
+    if (input.hasClass('shipping-input')) field = 'shipping';
+    if (input.hasClass('other-input')) field = 'other_charges';
+    if (input.hasClass('custom-input')) field = 'custom_charges';
+
+    $.post("index.php?r=product-receiving/update-field", {
+        id: id,
+        field: field,
+        value: value,
+        _csrf: yii.getCsrfToken()
+    })
+    .done(function(res){
+
+        if(res.success){
+
+            let attr = field.replace('_charges', '');
+
+            input.closest('tr').find('.cost-per-item')
+                .attr('data-' + attr, value);
+
+            calculateCosts();
+        }
+    });
+});
+
+
+JS;
+
+$this->registerJs($js);

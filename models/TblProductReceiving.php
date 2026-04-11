@@ -42,6 +42,8 @@ class TblProductReceiving extends \yii\db\ActiveRecord
             [['crt_time', 'mod_time','price_per_item'], 'safe'],
             [['ip'], 'string', 'max' => 40],
             [['bin_location'], 'string', 'max' => 100],
+              [['shipping', 'other_charges', 'custom_charges'], 'number'],
+            [['shipping', 'other_charges', 'custom_charges'], 'safe'],
 
         ];
     }
@@ -102,4 +104,27 @@ class TblProductReceiving extends \yii\db\ActiveRecord
     {
         return $this->hasOne(TblBinLocations::className(), ['id' => 'fk_bin_id'])->andOnCondition(['tbl_bin_locations.status'=>1]);
     }
+
+    public function getCostPerItem()
+{
+    $qty = $this->no_of_items ?: 1;
+
+    // product cost (USD if USA vendor)
+    $product_total = $this->price_per_item * $qty;
+
+    if ($this->vendor && $this->vendor->is_usa) {
+        $usd_to_cad = 1.35;
+        $product_total = $product_total * $usd_to_cad;
+    }
+
+    // charges ALWAYS in CAD
+    $extra = ($this->shipping ?? 0)
+           + ($this->other_charges ?? 0)
+           + ($this->custom_charges ?? 0);
+
+    $final = $product_total + $extra;
+
+    return round($final / $qty, 2);
+}
+
 }

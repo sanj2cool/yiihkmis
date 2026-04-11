@@ -377,7 +377,7 @@ class VendorPaymentController extends Controller
     $return_str .= '</tbody></table></div>';
     return $return_str;
   }
-  public function actionSendRemittance($id)
+  public function actionRemittance($id)
   {
     $payment = TblVendorPayment::findOne($id);
 
@@ -537,7 +537,7 @@ class VendorPaymentController extends Controller
 
     $attachmentBase64 = base64_encode($pdfContent);
     $emailPayload = [
-    'sender' => [
+    'er' => [
         'name' => $bill_from_cname,
         'email' => $bill_email,
     ],

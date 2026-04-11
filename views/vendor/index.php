@@ -128,6 +128,18 @@ if(isset($menuaccess) && $menuaccess->delete_crud == 1){
             ],
             // 'id',
             'company_name',
+            [
+    'attribute' => 'is_usa',
+    'label' => 'USA',
+    'format' => 'raw',
+    'value' => function ($model) {
+        return Html::checkbox('is_usa', $model->is_usa, [
+            'class' => 'usa-toggle',
+            'data-id' => $model->id
+        ]);
+    },
+],
+
             'contact_name',
             'contact_title',
             'email:email',
@@ -157,3 +169,26 @@ if(isset($menuaccess) && $menuaccess->delete_crud == 1){
 </div>
 </div>
 </div>
+
+<?php
+$script = <<<JS
+$(document).on('change', '.usa-toggle', function() {
+    var id = $(this).data('id');
+    var val = $(this).is(':checked') ? 1 : 0;
+
+    $.ajax({
+        url: 'index.php?r=vendor/toggle-usa',
+        type: 'POST',
+        data: {
+            id: id,
+            value: val,
+            _csrf: yii.getCsrfToken()
+        },
+        success: function(res) {
+            console.log('Updated');
+        }
+    });
+});
+JS;
+
+$this->registerJs($script);

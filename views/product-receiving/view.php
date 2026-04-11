@@ -25,37 +25,41 @@ $menuaccess = TblMenuAccess::find()->where(['fk_user_id'=>$fk_user_id,'fk_menu_i
 ?>
 <div class="tbl-product-receiving-view">
 
-
-  <div class="card shadow rounded mt-2">
-    <div class="card-body p-3">
-      <div class="row">
-        <div class="col-lg-4">
-          <h3><?= Html::encode($this->title) ?></h3>
-        </div>
-        <div class="col-lg-8 text-end">
-          <?php
+    <div class="card shadow rounded mt-2">
+        <div class="card-body p-3">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h3><?= Html::encode($this->title) ?></h3>
+                </div>
+                <div class="col-lg-8 text-end">
+                    <?php
           if(isset($menuaccess) && $menuaccess->edit_crud == 1){
             ?>
-            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#summaryModal">
-              <i class="fas fa-pen"></i> Update
-            </button>
-            <?php
+                    <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#summaryModal">
+                        <i class="fas fa-pen"></i>
+                        Update
+                    </button>
+                    <?php
           }
           //---no delete option for entries associated with the vendor invoices -----
 
           if(isset($menuaccess) && $menuaccess->delete_crud == 1 && empty($model->fk_vendor_invoice_id)){
             ?>
-            <?= Html::a('<i class="fas fa-trash"></i> Delete', ['delete', 'id' => $model->id], [
+                    <?= Html::a('<i class="fas fa-trash"></i> Delete', ['delete', 'id' => $model->id], [
               'class' => 'btn btn-danger btn-sm',
               'data' => [
                 'confirm' => 'Are you sure you want to delete this item?',
                 'method' => 'post',
               ],
               ]) ?>
-              <?php
+                <?php
             }else{
               ?>
-              <?= Html::a('<i class="fas fa-trash"></i> Delete', ['#', 'id' => $model->id], [
+                    <?= Html::a('<i class="fas fa-trash"></i> Delete', ['#', 'id' => $model->id], [
                 'class' => 'btn btn-danger btn-sm disabled',
                 'data' => [
                   'confirm' => 'Are you sure you want to delete this item?',
@@ -63,42 +67,50 @@ $menuaccess = TblMenuAccess::find()->where(['fk_user_id'=>$fk_user_id,'fk_menu_i
                 ],
                 ]) ?>
 
-              <?php
+                    <?php
             }
             ?>
-            <?= Html::a('<i class="fas fa-chevron-left"></i> Back to List', ['index'], ['class' => 'btn btn-secondary btn-sm']) ?>
-            <?php
+                    <?= Html::a('<i class="fas fa-chevron-left"></i> Back to List', ['index'], ['class' => 'btn btn-secondary btn-sm']) ?>
+                    <?php
               if(!empty($model->fk_vendor_invoice_id)){
                 ?>
-                <p class="mb-0">
-                  This entry is related to purchase invoice and will be deleted from there only.
-                </p>
-                <?php
+                    <p class="mb-0">
+                        This entry is related to purchase invoice and will be deleted from there only.
+                    </p>
+                    <?php
               }
              ?>
-          </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
     <div id="msg">
 
-      <?php
+        <?php
       if(Yii::$app -> session -> getFlash('success')!=null){
         ?>
 
         <div class="alert alert-outline-success d-flex align-items-center" role="alert">
-          <span class="fas fa-check-circle text-success fs-5 me-3"></span>
-          <p class="mb-0 flex-1"><?= Yii::$app -> session -> getFlash('success'); ?></p>
+            <span class="fas fa-check-circle text-success fs-5 me-3"></span>
+            <p class="mb-0 flex-1"><?= Yii::$app -> session -> getFlash('success'); ?></p>
 
-          <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button
+                class="btn-close"
+                type="button"
+                data-bs-dismiss="alert"
+                aria-label="Close"></button>
         </div>
-        <?php
+    <?php
       }else if(Yii::$app -> session -> getFlash('error')!=null){
         ?>
         <div class="alert alert-outline-danger d-flex align-items-center" role="alert">
-          <span class="fas fa-times-circle text-danger fs-5 me-3"></span>
-          <p class="mb-0 flex-1"><?= Yii::$app -> session -> getFlash('error'); ?></p>
-          <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
+            <span class="fas fa-times-circle text-danger fs-5 me-3"></span>
+            <p class="mb-0 flex-1"><?= Yii::$app -> session -> getFlash('error'); ?></p>
+            <button
+                class="btn-close"
+                type="button"
+                data-bs-dismiss="alert"
+                aria-label="Close"></button>
         </div>
 
         <?php
@@ -106,7 +118,7 @@ $menuaccess = TblMenuAccess::find()->where(['fk_user_id'=>$fk_user_id,'fk_menu_i
       ?>
     </div>
     <div class="card shadow rounded mt-2">
-      <div class="card-body p-3">
+        <div class="card-body p-3">
         <?= DetailView::widget([
           'model' => $model,
           'attributes' => [
@@ -170,37 +182,88 @@ $menuaccess = TblMenuAccess::find()->where(['fk_user_id'=>$fk_user_id,'fk_menu_i
           ]) ?>
 
         </div>
-      </div>
     </div>
+</div>
 
-    <div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
+<div
+    class="modal fade"
+    id="summaryModal"
+    tabindex="-1"
+    aria-labelledby="summaryModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title8" id="summaryModalLabel">Update</h3>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <form name="frm_reservation" id="" action="<?= Yii::$app->urlManager->createUrl(['product-receiving/edit-entry','id'=>$model->id]) ?>" method="post" autocomplete="off">
-            <input type="hidden" name="_csrf" value="<?=Yii::$app->request->getCsrfToken()?>" />
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-lg-12 mb-2">
-                  <label for="">Bin Location</label>
-                  <input type="text" name="bin_location" value="<?=$model->bin_location?>" class="form-control">
+            <div class="modal-header">
+                <h3 class="modal-title8" id="summaryModalLabel">Update</h3>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form
+                name="frm_reservation"
+                id=""
+                action="<?= Yii::$app->urlManager->createUrl(['product-receiving/edit-entry','id'=>$model->id]) ?>"
+                method="post"
+                autocomplete="off">
+                <input
+                    type="hidden"
+                    name="_csrf"
+                    value="<?=Yii::$app->request->getCsrfToken()?>"/>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12 mb-2">
+                            <label for="">Bin Location</label>
+                            <input
+                                type="text"
+                                name="bin_location"
+                                value="<?=$model->bin_location?>"
+                                class="form-control">
+
+                        </div>
+                        <div class="col-lg-12 mb-2">
+                            <label for="">Remarks</label>
+                            <textarea class="form-control" name="remarks" rows="3"><?=$model->remarks?></textarea>
+                        </div>
+
+                        <div class="col-lg-12 mb-2">
+                            <label>Shipping</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                name="shipping"
+                                value="<?= $model->shipping ?>"
+                                class="form-control">
+                        </div>
+
+                        <div class="col-lg-12 mb-2">
+                            <label>Other Charges</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                name="other_charges"
+                                value="<?= $model->other_charges ?>"
+                                class="form-control">
+                        </div>
+
+                        <div class="col-lg-12 mb-2">
+                            <label>Custom Charges</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                name="custom_charges"
+                                value="<?= $model->custom_charges ?>"
+                                class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
 
                 </div>
-                <div class="col-lg-12 mb-2">
-                  <label for="">Remarks</label>
-                  <textarea class="form-control" name="remarks" rows="3"><?=$model->remarks?></textarea>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary btn-sm">Submit</button>
-              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-
-            </div>
-          </form>
+            </form>
         </div>
-      </div>
     </div>
+</div>

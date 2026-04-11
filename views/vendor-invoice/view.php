@@ -78,6 +78,15 @@ $balance_due = $model->total_amount-$amount_received;
       <div class="row">
         <div class="col-lg-6">
           <h3><?= Html::encode($this->title) ?></h3>
+          <?php if ($model->vendor && $model->vendor->is_usa == 1): ?>
+    <div>
+        <?= \app\components\CurrencyConverter::widget([
+            'amount' => $model->total_amount
+        ]); ?>
+    </div>
+<?php endif; ?>
+
+
         </div>
         <div class="col-lg-6 text-end">
           <?php

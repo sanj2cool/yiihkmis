@@ -46,6 +46,9 @@ $termarr = ArrayHelper::map($allterms,'id','title');
             </div>
             <div class="col-lg-3">
                 <?= $form->field($model, 'city')->textInput(['maxlength' => true]) ?>
+                <?= $form->field($model, 'is_usa')->checkbox([
+            'label' => 'USA Based Vendor'
+        ]) ?>
             </div>
           </div>
           <div class="row mt-2">

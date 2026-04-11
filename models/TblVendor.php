@@ -49,6 +49,7 @@ class TblVendor extends \yii\db\ActiveRecord
             [['phone'], 'string', 'max' => 50],
             [['city', 'state', 'country'], 'string', 'max' => 100],
             [['postal_code', 'ip'], 'string', 'max' => 20],
+            ['is_usa', 'boolean'],
         ];
     }
     public function beforeSave($insert) {

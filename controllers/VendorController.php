@@ -596,4 +596,19 @@ private function sendViaBrevo($toEmail, $toName, $pdfPath, $fromDate, $toDate,$b
     ];
 }
 
+public function actionToggleUsa()
+{
+    $id = Yii::$app->request->post('id');
+    $value = Yii::$app->request->post('value');
+
+    $model = TblVendor::findOne($id);
+    if ($model) {
+        $model->is_usa = $value;
+        $model->save(false);
+    }
+
+    return json_encode(['success' => true]);
+}
+
+
 }
